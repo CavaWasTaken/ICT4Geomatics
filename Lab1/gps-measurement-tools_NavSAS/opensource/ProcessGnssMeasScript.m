@@ -28,12 +28,12 @@ addpath('library')
 % Replace these with your own data if needed
 % The log file obtained through new geolocalization systems contains
 % letters to be removed for this code
-prFileName    = 'gnss_log_2025_03_25_11_10_18.txt'; % Name of the GNSS log file
-dirName       = 'demoFiles/myLogs';              % Directory containing the log file
+prFileName    = 'gnss_log_2021_10_11_12_00_32.txt'; % Name of the GNSS log file
+dirName       = 'demoFiles/dataset_a';              % Directory containing the log file
 
 %% True position
 % Specify the true WGS84 latitude, longitude, and altitude (if known)
-param.llaTrueDegDegM = [];
+param.llaTrueDegDegM = [37.422578, -122.081678, -28]; %Charleston Park Test Site
 % Example: Uncomment and set the true position if available
 % param.llaTrueDegDegM = [37.422578, -122.081678, -28]; % Charleston Park Test Site
 
@@ -85,50 +85,45 @@ PlotCno(gnssMeas, prFileName, colors);
 
 %% Plot number of satellites/availability
 % Uncomment the following line to plot the number of satellites over time
+h4 = figure;
 PlotSatelliteCounter(gnssMeas, prFileName);
 
-%% Compute Weighted Least Squares (WLS) position and velocity
-% Uncomment the following line to compute the WLS PVT solution
-% gpsPvt = GpsWlsPvt(gnssMeas, allGpsEph);
-
-% For now, set gpsPvt to an empty array (no PVT computation)
+%% compute WLS position and velocity
+% gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph);
 gpsPvt = [];
 
-% If the WLS PVT solution is available, plot the results
 if ~isempty(gpsPvt)
-    %% Plot PVT results
+    %% plot PVT results
     h4 = figure;
-    ts = 'Raw Pseudoranges, Weighted Least Squares solution'; % Title for the plot
-    PlotPvt(gpsPvt, prFileName, param.llaTrueDegDegM, ts); drawnow;
-
-    % Plot the PVT states (e.g., position, velocity, clock bias)
+    ts = 'Raw Pseudoranges, Weighted Least Squares solution';
+    PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;
     h5 = figure;
-    PlotPvtStates(gpsPvt, prFileName);
+    PlotPvtStates(gpsPvt,prFileName);
 
-    %% Plot PVT on a geoplot
-    % Create a geoplot to visualize the positioning solution on a map
-    h6 = figure('Name', '[Optional] Plot Positioning Solution on Map');
-    geoplot(gpsPvt.allLlaDegDegM(:, 1), gpsPvt.allLlaDegDegM(:, 2)), hold on
 
-    % Animated geoplot: Plot the trajectory point by point
-    for epochIdx = 1:size(gpsPvt.allLlaDegDegM, 1)
-        geoplot(gpsPvt.allLlaDegDegM(epochIdx, 1), gpsPvt.allLlaDegDegM(epochIdx, 2), ...
-            'ro', 'MarkerSize', 4, 'MarkerFaceColor', 'r');
+    %% plot PVT on geoplot
+    h8 = figure('Name','[Optional] Plot Positioning Solution on Map');
+    geoplot(gpsPvt.allLlaDegDegM(:,1),gpsPvt.allLlaDegDegM(:,2)), hold on
+
+    % animated geoplot
+    for epochIdx = 1:size(gpsPvt.allLlaDegDegM,1)
+        figure(h8)
+        geoplot(gpsPvt.allLlaDegDegM(epochIdx,1),gpsPvt.allLlaDegDegM(epochIdx,2),'ro','MarkerSize',4,'MarkerFaceColor','r')
         drawnow
-        pause(0.01); % Pause briefly to create the animation effect
+        pause(0.01)
     end
 end
 
-%% End of ProcessGnssMeasScript
+%% end of ProcessGnssMeasScript
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Copyright 2016 Google Inc.
-% 
+%
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
 % You may obtain a copy of the License at
-% 
+%
 %     http://www.apache.org/licenses/LICENSE-2.0
-% 
+%
 % Unless required by applicable law or agreed to in writing, software
 % distributed under the License is distributed on an "AS IS" BASIS,
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.

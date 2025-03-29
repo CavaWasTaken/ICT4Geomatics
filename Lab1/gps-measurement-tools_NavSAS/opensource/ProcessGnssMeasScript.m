@@ -28,8 +28,8 @@ addpath('library')
 % Replace these with your own data if needed
 % The log file obtained through new geolocalization systems contains
 % letters to be removed for this code
-prFileName    = 'gnss_log_2021_10_11_12_00_32.txt'; % Name of the GNSS log file
-dirName       = 'demoFiles/dataset_a';              % Directory containing the log file
+prFileName    = 'gnss_log_2025_03_29_11_09_05.txt'; % Name of the GNSS log file
+dirName       = 'demoFiles/myLogs';              % Directory containing the log file
 
 %% True position
 % Specify the true WGS84 latitude, longitude, and altitude (if known)
@@ -90,14 +90,17 @@ PlotSatelliteCounter(gnssMeas, prFileName);
 
 %% compute WLS position and velocity
 % gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph);
+
+[xHat, dRho, H, dx] = pvtCore(gnssMeas.PrM, svPos, svClockBias, xHat, Wpr);
+
 gpsPvt = [];
 
 if ~isempty(gpsPvt)
     %% plot PVT results
-    h4 = figure;
+    h5 = figure;
     ts = 'Raw Pseudoranges, Weighted Least Squares solution';
     PlotPvt(gpsPvt,prFileName,param.llaTrueDegDegM,ts); drawnow;
-    h5 = figure;
+    h6 = figure;
     PlotPvtStates(gpsPvt,prFileName);
 
 

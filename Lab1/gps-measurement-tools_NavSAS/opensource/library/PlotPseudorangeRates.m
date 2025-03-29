@@ -34,7 +34,8 @@ gray = [.5 .5 .5];
 timeSeconds =gnssMeas.FctSeconds-gnssMeas.FctSeconds(1);%elapsed time in seconds (time between samples)
 
 %plot slope of pr and prr
-% gnssMeas.DelPrM is a matrix NxM (N is the number of samples taken over time, M is the number of satellites), each element represents the change in pseudorange for a specific satellite at a specific time (Delta_p(t) = p(t)- p(t-1))
+% gnssMeas.DelPrM is a matrix NxM (N is the number of samples taken over time, M is the number of satellites), each element represents the change in pseudorange for a specific satellite at a specific time respect to the first measurement
+% gnssMeas.DelPrm contains the same values that we have plotted in the second plot of the first figure
 delPr = gnssMeas.DelPrM;
 ts = ('diff(raw pr)/diff(time) and reported prr');
 h12(1) = subplot(5,1,1:4); hold on
@@ -48,7 +49,7 @@ for i=1:M
     iFi = find(isfinite(y));    % find the indices of finite values in the array y (pseudorange rate of the i-th satellite)
     if ~isempty(iFi) % if there are finite values
         % plot the pseudorange rate (relative velocity between Tx-Rx) for the i-th satellite over the time in seconds
-        h = plot(timeSeconds,y); set(h,'Color',gray);
+        h = plot(timeSeconds,y, "DisplayName", sprintf('Th.Rate: SV %d', gnssMeas.Svid(i))); set(h,'Color',gray);
         ti = timeSeconds(iFi(1));   % get the time of the first finite value
         % print on the plot the satellite number next to the first value of its pseudorange rate
         ht=text(ti,y(iFi(1)),int2str(gnssMeas.Svid(i)),'Color',gray);
@@ -57,13 +58,17 @@ for i=1:M
         meanPrrM = mean(y(iFi));%store for analysing delta prr dpr
         
         %plot delta pr
-        y = delPr(:,i); % get the pseudorange changes for the i-th satellite
+        y = delPr(:,i); % at each timestamp it evaluates how many meters the pseudorange has changed from the first measurements, for the satellite i
         iFi = find(isfinite(y));    % find the indices of finite values in the array y (pseudorange changes of the i-th satellite)
         if any(iFi) % if there are finite values
             ti = timeSeconds(iFi(end)); % get the time of the last finite value
             % evaluate the slope of the pseudorange changes for the i-th satellite by subtracting each value of the array with the previous one and dividing by the time difference
+            % we compute the differences between consecutive values of delta and we obtain how the pseudorange changes over time
+            % then we divide these differences by the time differences to obtain the slope (m/s) of the measurements
+            % this measure is the real (statistical) pseudorange rate, instead the gnssMeas.PrrMps is the reported pseudorange rate
             y = diff(y)./diff(timeSeconds);%slope of pr (m/s)
-            h = plot(timeSeconds(2:end),y);  set(h,'Marker','.','MarkerSize',4)
+            % by doing the diff operation we lose the first value of the array, so we need to plot the time starting from the second element
+            h = plot(timeSeconds(2:end),y, "DisplayName", sprintf('Ms.Rate: SV %d', gnssMeas.Svid(i)));  set(h,'Marker','.','MarkerSize',4)
             if bGotColors
                 set(h,'Color',colors(i,:));
             else
@@ -92,6 +97,10 @@ ts = ' mean(prr) - mean (diff(pr)/diff(time)) = [';
 ds = sprintf('%.2f, ',deltaMeanM);
 ht=text(ax(1),ax(3)-100,[ts,ds(1:end-2),'] (m/s)']);
 set(ht,'VerticalAlignment','top','Color',gray)
+
+legend('show','Location','best');
+hLegend = legend;
+set(hLegend, 'ItemHitFcn', @(src, event) ToggleVisibility(event));
 
 bClockDis = [0;diff(gnssMeas.ClkDCount)~=0];%binary, 1 <=> clock discontinuity
 

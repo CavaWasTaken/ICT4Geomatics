@@ -41,7 +41,7 @@ for i=1:M   % for each satellite print its pseudorange
     if ~isempty(iF) % if there are finite values
         ti = timeSeconds(iF(end));
         % plot the value of the pseudorange for the i-th satellite over the time in seconds
-        h=plot(timeSeconds,priM); set(h,'Marker','.','MarkerSize',4)
+        h=plot(timeSeconds,priM, "DisplayName", sprintf('SV %d', gnssMeas.Svid(i))); set(h,'Marker','.','MarkerSize',4)
         if bGotColors
             set(h,'Color',colors(i,:));
         else
@@ -54,15 +54,22 @@ for i=1:M   % for each satellite print its pseudorange
         h123(2) = subplot(5,1,3:4); hold on
         y = priM-priM(iF(1));   % change in pseudoranges since first measurement
         % plot the change in pseudoranges for the i-th satellite over the time in seconds
-        h=plot(timeSeconds,y);set(h,'Marker','.','MarkerSize',4)
+        h=plot(timeSeconds,y, "DisplayName", sprintf('SV %d', gnssMeas.Svid(i)));set(h,'Marker','.','MarkerSize',4)
         set(h,'Color',colors(i,:));
         text(ti,y(iF(end)),int2str(gnssMeas.Svid(i)),'Color',colors(i,:));
     end
 end
 subplot(5,1,1:2); ax=axis;
 title('Pseudoranges vs time'), ylabel('(meters)')
+legend('show','Location','best');
+hLegend = legend;
+set(hLegend, 'ItemHitFcn', @(src, event) ToggleVisibility(event));
+
 subplot(5,1,3:4); set(gca,'XLim',ax(1:2));
 title('Pseudoranges change from initial value'),ylabel('(meters)')
+legend('show','Location','best');
+hLegend = legend;
+set(hLegend, 'ItemHitFcn', @(src, event) ToggleVisibility(event));
 
 % gnssMeas.ClkDCount is the clock count of the receiver when it processed the incoming signals. The signals are processed in discrete time intervals (epochs)
 % diff(gnssMeas.ClkDCount) returns a vector containing the differences between consecutive elements of gnssMeas.ClkDCount array

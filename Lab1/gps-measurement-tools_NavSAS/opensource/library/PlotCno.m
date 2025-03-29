@@ -37,7 +37,7 @@ for i=1:M
         % get the time of the last finite value
         ti = timeSeconds(iF(end));
         % plot the C/No for the i-th satellite over the time in seconds
-        h = plot(timeSeconds,Cn0iDbHz);
+        h = plot(timeSeconds,Cn0iDbHz, "DisplayName", sprintf('SV %d',gnssMeas.Svid(i)));
         hold on
         if bGotColors
             set(h,'Color',colors(i,:));
@@ -55,10 +55,15 @@ for i=1:M
         text(ti,Cn0iDbHz(iF(end)),ts,'Color',colors(i,:));
     end
 end
+
 title('C/No in dB.Hz'),ylabel('(dB.Hz)')
 xs = sprintf('time (seconds)\n%s',prFileName);
 xlabel(xs,'Interpreter','none')
 grid on
+
+legend('show','Location','best');
+hLegend = legend;
+set(hLegend, 'ItemHitFcn', @(src, event) ToggleVisibility(event));
 
 if nargout
     colorsOut = colors;

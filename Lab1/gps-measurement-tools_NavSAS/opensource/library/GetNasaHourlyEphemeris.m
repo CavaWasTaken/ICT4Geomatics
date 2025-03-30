@@ -136,13 +136,15 @@ if ~bGotGpsEph
         sysFlag=0;
     catch
         fprintf('\nError in GetNasaHourlyEphemeris.m\n')
-        fprintf('%s',result);
-        fprintf('System command "gunzip" failed\n')
-        fprintf('Unzip contents of %s by hand. See http://www.gzip.org/\n',downloadedFilename)
+        fprintf('Unzip of ''%s'' failed\n',downloadedFilename)
+        str = split(downloadedFilename,".");
+        if str{end}=="Z" % if file is .Z (i.e. old ephemeris data)
+            fprintf('File .Z needs cannot be uzipped by MATLAB\n')          
+        end
+        fprintf('Unzip contents of %s by hand.\n',downloadedFilename)
         fprintf('Then run this function again, it will read the uncompressed file\n')
         sysFlag=-1;
     end
-
     
     bOk = bOk && ~sysFlag;
     if bOk

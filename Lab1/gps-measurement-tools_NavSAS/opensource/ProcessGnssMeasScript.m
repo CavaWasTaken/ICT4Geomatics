@@ -28,8 +28,8 @@ addpath('library')
 % Replace these with your own data if needed
 % The log file obtained through new geolocalization systems contains
 % letters to be removed for this code
-prFileName    = 'gnss_log_2025_03_29_11_09_05.txt'; % Name of the GNSS log file
-dirName       = 'demoFiles/myLogs';              % Directory containing the log file
+prFileName    = 'gnss_log_2021_10_11_17_35_29.txt'; % Name of the GNSS log file
+dirName       = 'demoFiles/dataset_a';              % Directory containing the log file
 
 %% True position
 % Specify the true WGS84 latitude, longitude, and altitude (if known)
@@ -69,7 +69,6 @@ if isempty(allGpsEph), return, end
 %% Process raw measurements and compute pseudoranges
 % Compute pseudoranges from the GNSS raw measurements
 [gnssMeas] = ProcessGnssMeas(gnssRaw);
-
 %% Plot pseudoranges and pseudorange rates
 % Plot the pseudoranges
 h1 = figure;    % figure 1
@@ -87,13 +86,11 @@ PlotCno(gnssMeas, prFileName, colors);
 % Uncomment the following line to plot the number of satellites over time
 h4 = figure;
 PlotSatelliteCounter(gnssMeas, prFileName);
-
 %% compute WLS position and velocity
-% gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph);
-
-[xHat, dRho, H, dx] = pvtCore(gnssMeas.PrM, svPos, svClockBias, xHat, Wpr);
-
-gpsPvt = [];
+gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph);
+%% Display the computed PVT results
+%disp('PVT Results for all epochs:');
+%disp(gpsPvt);
 
 if ~isempty(gpsPvt)
     %% plot PVT results

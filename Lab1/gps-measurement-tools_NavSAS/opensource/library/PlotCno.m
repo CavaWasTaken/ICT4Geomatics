@@ -29,15 +29,11 @@ end
 timeSeconds = gnssMeas.FctSeconds-gnssMeas.FctSeconds(1);%elapsed time in seconds
 %Plot C/No
 for i=1:M
-    % extract the C/No data for the i-th satellite
-    % C/No is a measure of the signal quality of a GNSS satellite signal received by the receiver. Is expressed in decibels relative to 1 Hz (dB.Hz)
     Cn0iDbHz = gnssMeas.Cn0DbHz(:,i);
     iF = find(isfinite(Cn0iDbHz));
     if ~isempty(iF)
-        % get the time of the last finite value
         ti = timeSeconds(iF(end));
-        % plot the C/No for the i-th satellite over the time in seconds
-        h = plot(timeSeconds,Cn0iDbHz, "DisplayName", sprintf('SV %d',gnssMeas.Svid(i)));
+        h = plot(timeSeconds,Cn0iDbHz);
         hold on
         if bGotColors
             set(h,'Color',colors(i,:));
@@ -45,25 +41,17 @@ for i=1:M
             colors(i,:) = get(h,'Color');
         end
         ts = int2str(gnssMeas.Svid(i));
-        % the azimuth is the horizontal angle of the satellite relative to the receiver
-        % the elevation is the vertical angle of the satellite relative to the receiver
-        if isfinite(gnssMeas.AzDeg(i))  % if the azimuth is available
+        if isfinite(gnssMeas.AzDeg(i))
             ts = sprintf('%s, %03.0f^o, %02.0f^o',ts,...
-                gnssMeas.AzDeg(i),gnssMeas.ElDeg(i));   % add the azimuth and elevation to the label
+                gnssMeas.AzDeg(i),gnssMeas.ElDeg(i));
         end
-        % add the satellite ID to the last value
         text(ti,Cn0iDbHz(iF(end)),ts,'Color',colors(i,:));
     end
 end
-
 title('C/No in dB.Hz'),ylabel('(dB.Hz)')
 xs = sprintf('time (seconds)\n%s',prFileName);
 xlabel(xs,'Interpreter','none')
 grid on
-
-legend('show','Location','best');
-hLegend = legend;
-set(hLegend, 'ItemHitFcn', @(src, event) ToggleVisibility(event));
 
 if nargout
     colorsOut = colors;

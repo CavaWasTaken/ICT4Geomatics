@@ -14,7 +14,6 @@ function PlotSatelliteCounter(gnssMeas,prFileName)
     % save in an array the epochs where the receiver can't compute PVT
     notEnoughSatellites = zeros(num_epochs, 1);
     
-
     timeSeconds = gnssMeas.FctSeconds-gnssMeas.FctSeconds(1);%elapsed time in seconds
     for i = 1:num_epochs
         for j = 1:num_satellites
@@ -47,14 +46,14 @@ function PlotSatelliteCounter(gnssMeas,prFileName)
     legend('Visible Satellites', 'Not Enough Satellites');
     hold off;
 
-    % another way of counting the number of satellites avaiblem check it
-    for i=1:num_epochs
-        iValid = find(isfinite(gnssMeas.PrM(i,:))); %index into valid svid
-        svid = gnssMeas.Svid(iValid)';
-        
-        svid = svid(iSv); %svid for which we have ephemeris
-        numSvs = length(svid); %number of satellites this epoch
-        if numSvs<4
-            continue;%skip to next epoch
-        end
-    end
+    % another way of counting the number of satellites
+    %for i=1:num_epochs
+    %    iValid = find(isfinite(gnssMeas.PrM(i,:))); %index into valid svid
+    %    svid = gnssMeas.Svid(iValid)';
+    %    
+    %    numSvs = length(svid); %number of satellites this epoch
+    %    visibleSatelliteCounts(i) = numSvs; %store number of satellites in this epoch
+    %    if numSvs<4
+    %        continue;%skip to next epoch
+    %    end
+    %end

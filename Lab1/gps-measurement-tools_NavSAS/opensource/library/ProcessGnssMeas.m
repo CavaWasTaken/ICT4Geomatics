@@ -74,13 +74,6 @@ weekNumberNanos = int64(weekNumber)*int64(GpsConstants.WEEKSEC*1e9);
 
 %compute tRxNanos using gnssRaw.FullBiasNanos(1), so that
 % tRxNanos includes rx clock drift since the first epoch:
-% formula to evaluate the corrected reception time of a GNSS signals
-% gnssRaw.TimeNanos: raw time of reception of the GNSS signal in nanoseconds. It is the time recorded by the receiver's clock when the signal was received
-% gnssRaw.FullBiasNanos(1): full bias of the receiver's clock in nanoseconds. It accounts for the offset between the receiver's clock and the GNSS system time. We are selecting the first element of the array with (1)
-% gnssRaw.TimeNanos - gnssRaw.FullBiasNanos(1): we align the receiver's clock with the GNSS system time by removing the full bias from the raw time of reception
-% weekNumberNanos: the number of nanoseconds in the week when the signal was transmitted
-% (gnssRaw.TimeNanos - gnssRaw.FullBiasNanos(1)) - weekNumberNanos: ensures that the time is adjusted to the correct week
-% weeks is referenced to GNSS weeks. The GNSS calendar has started on January 6, 1980, and each week is exactly every 604800 seconds long (7 days * 24 hours * 60 minutes * 60 seconds). So the week counter raise of 1 every 604800 seconds and the seconds counter is reset to 0. The week counter reset to 0 every 1024 weeks (19.7 years)
 tRxNanos = gnssRaw.TimeNanos -gnssRaw.FullBiasNanos(1) - weekNumberNanos;
 
 %Assert if Tow state ~=1, because then gnssRaw.FullBiasNanos(1) might be wrong
@@ -94,23 +87,13 @@ assert(bitand(State,2^0) &  bitand(State,2^3),...
 assert(all(tRxNanos >= 0),'tRxNanos should be >= 0')
 
 %subtract the fractional offsets TimeOffsetNanos and BiasNanos:
-% formula to compute the corrected reception time of a GNSS signal in seconds, relative to the start of the week
-% double(tRxNanos): convert the time of reception to a double-precision floating-point number for further calculations
-% - gnssRaw.TimeOffsetNanos: subtract the time offset in nanoseconds. This offset accounts for small timing errors introduced by the GNSS receiver's clock
-% - gnssRaw.BiasNanos: subtract the bias in nanoseconds. The bias rapresents additional timing errors in the receiver's clock
-% * 1e-9: convert the time of reception to seconds
 tRxSeconds  = (double(tRxNanos)-gnssRaw.TimeOffsetNanos-gnssRaw.BiasNanos)*1e-9;
-% formula to compute the time of transmission of the GNSS signal in seconds, relative to the start of the week
-% double(gnssRaw.TransmissionTimeNanos): convert the time of transmission to a double-precision floating-point number for further calculations
-% * 1e-9: convert the time of transmission to seconds
 tTxSeconds  = double(gnssRaw.ReceivedSvTimeNanos)*1e-9;
 
 %check for week rollover in tRxSeconds
-% the function evaluate the pseudorange in seconds by evaluating the difference between the reception time and the transmission time
-% the function also checks if there is a week rollover in the time tags, in case it adjusts the time tags
 [prSeconds,tRxSeconds]  = CheckGpsWeekRollover(tRxSeconds,tTxSeconds);
 %we are ready to compute pseudorange in meters:
-PrM         = prSeconds*GpsConstants.LIGHTSPEED;    % seconds * meters per second = meters
+PrM         = prSeconds*GpsConstants.LIGHTSPEED;
 
 PrSigmaM    = double(gnssRaw.ReceivedSvTimeUncertaintyNanos)*1e-9*...
     GpsConstants.LIGHTSPEED;
@@ -170,7 +153,7 @@ iBad = iTowUnc | iPrrUnc;
 if any(iBad)
     numBad = sum(iBad);
     %assert if we're about to remove everything:
-    assert(numBad<length(iBad),'Removing all measurements in gnssRaw')  % if the condition is false, the program should stop and display an error message
+    assert(numBad<length(iBad),'Removing all measurements in gnssRaw')
     
     names = fieldnames(gnssRaw);
     for i=1:length(names)
@@ -223,15 +206,12 @@ end %of function GetDelPr
 function [prSeconds,tRxSeconds]  = CheckGpsWeekRollover(tRxSeconds,tTxSeconds)
 %utility function for ProcessGnssMeas
 
-% TO CHECK: if a week rollover occures the Rx time should be lower then the transmission time, so the value is negative. Then the condition is false and the program fails to detect the week rollover
 prSeconds  = tRxSeconds - tTxSeconds;
 
-% it checks if the pseudorange exceeds the half the length of a GPS week
-iRollover = prSeconds > GpsConstants.WEEKSEC/2; % is an array of zeros and ones
+iRollover = prSeconds > GpsConstants.WEEKSEC/2;
 if any(iRollover)
-    % if a week rollover occures means that during the transmission (between Tx and Rx time) the week counter has been resetted to 0
     fprintf('\nWARNING: week rollover detected in time tags. Adjusting ...\n')
-    prS = prSeconds(iRollover); % get an array with the values of the pseudorange that exceed the half the length of a GPS week
+    prS = prSeconds(iRollover);
     delS = round(prS/GpsConstants.WEEKSEC)*GpsConstants.WEEKSEC;
     prS = prS - delS;
     %prS are in the range [-WEEKSEC/2 : WEEKSEC/2];

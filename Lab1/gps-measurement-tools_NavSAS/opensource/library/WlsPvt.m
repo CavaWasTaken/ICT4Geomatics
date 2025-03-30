@@ -1,4 +1,4 @@
-function [xHat,z,svState,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo)
+function [xHat,z,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo)
 % [xHat,z,svPos,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo)
 % calculate a weighted least squares PVT solution, xHat
 % given pseudoranges, pr rates, and initial state
@@ -36,9 +36,9 @@ if ~bOk
     error('inputs not right size, or not properly aligned with each other')
 end
 
-xHat=[]; z=[]; H=[]; svState=[];
-rxEstPos = xo(1:3);
-rxClockBias = xo(4);
+xHat = xo(1:4); 
+z=[]; 
+H=[]; 
 
 if numVal<4
   return
@@ -56,7 +56,7 @@ svClockBias = svClockBias(:); %make into a column for compatibility with other t
 ttx = ttxSeconds - svClockBias; %subtract dtsv from sv time to get true gps time
 
 %calculate satellite position at ttx
-[svXyzTtx,svClockBias,svXyzDot,dtsvDot]=GpsEph2Pvt(gpsEph,[ttxWeek,ttx]);
+[svXyzTtx,svClockBias,svXyzDot,dtsvDot] = GpsEph2Pvt(gpsEph,[ttxWeek,ttx]);
 svPos = svXyzTtx; %initialize svXyz at time of reception
 
 %Compute weights ---------------------------------------------------
@@ -64,42 +64,35 @@ Wpr = diag(1./prs(:,jPrSig));
 Wrr = diag(1./prs(:,jPrrSig));
 
 %iterate on this next part tilL change in pos & line of sight vectors converge
-xHat=zeros(4,1);
-dx=xHat+inf;
-whileCount=0; maxWhileCount=100; 
+dx=inf;
+whileCount=0; 
+maxWhileCount=1000; 
 %we expect the while loop to converge in < 10 iterations, even with initial
 %position on other side of the Earth (see Stanford course AA272C "Intro to GPS")
+% iterate until the change in position is small enough
 while norm(dx) > GnssThresholds.MAXDELPOSFORNAVM
-    whileCount=whileCount+1;
+    whileCount=whileCount+1;    % track number of iterations to check for convergence
     assert(whileCount < maxWhileCount,...
         'while loop did not converge after %d iterations',whileCount);
-    for i=1:length(gpsEph)
+    for i=1:length(gpsEph)  % loop over all satellites for correcting the satellite positions depending on the signal's flight time
         % calculate tflight from, bc and dtsv
-        dtflight = (prs(i,jPr)-rxClockBias)/GpsConstants.LIGHTSPEED + svClockBias(i);
+        dtflight = (prs(i,jPr)-xHat(4))/GpsConstants.LIGHTSPEED + svClockBias(i);
         % Use of bc: bc>0 <=> pr too big <=> tflight too big.
         %   i.e. trx = trxu - bc/GpsConstants.LIGHTSPEED
         % Use of dtsv: dtsv>0 <=> pr too small <=> tflight too small.
         %   i.e ttx = ttxsv - dtsv
         svPos(i,:) = FlightTimeCorrection(svXyzTtx(i,:), dtflight);
     end
-
-  svState = [prs(:,3),svPos,svClockBias(:)];
-  pseudoranges = prs(:,jPr);
   
-
-  %% **********************************************************************
-  %--- Write your PVT here
-
-
-
-  %% **********************************************************************
-
+  %--- Write your PVT inside this function
+  [xHat,zPr,H,dx] = pvtCore(prs(:,jPr),svPos,svClockBias,xHat,Wpr);
 
   %--- Now calculate the a-posteriori range residual
   zPr = zPr-H*dx;
 end
 
 % Compute velocities ---------------------------------------------------------
+a = H(:,1:3)';
 rrMps = zeros(numVal,1);
 for i=1:numVal
     %range rate = [satellite velocity] dot product [los from xo to sv]

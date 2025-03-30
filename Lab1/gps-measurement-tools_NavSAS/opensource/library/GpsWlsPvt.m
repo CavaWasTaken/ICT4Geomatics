@@ -80,8 +80,7 @@ for i=1:N
     prs = [tRx, svid, prM, prSigmaM, prrMps, prrSigmaMps];
     
     xo(5:7) = zeros(3,1); %initialize speed to zero
-    [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
-    xo = xo + xHat;
+    [xo,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo); %compute WLS solution
     
     %extract position states
     llaDegDegM = Xyz2Lla(xo(1:3)');

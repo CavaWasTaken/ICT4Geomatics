@@ -66,7 +66,7 @@ Wrr = diag(1./prs(:,jPrrSig));
 %iterate on this next part tilL change in pos & line of sight vectors converge
 dx=inf;
 whileCount=0; 
-maxWhileCount=1000; 
+maxWhileCount=100; 
 %we expect the while loop to converge in < 10 iterations, even with initial
 %position on other side of the Earth (see Stanford course AA272C "Intro to GPS")
 % iterate until the change in position is small enough

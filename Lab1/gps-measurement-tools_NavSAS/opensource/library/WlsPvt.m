@@ -37,6 +37,8 @@ if ~bOk
 end
 
 xHat = xo(1:4); 
+xyz0 = xo(1:3); %initial position
+bc = xo(4); %initial clock bias
 z=[]; 
 H=[]; 
 
@@ -84,11 +86,11 @@ while norm(dx) > GnssThresholds.MAXDELPOSFORNAVM
         svPos(i,:) = FlightTimeCorrection(svXyzTtx(i,:), dtflight);
     end
   
-  %--- Write your PVT inside this function
-  [xHat,zPr,H,dx] = pvtCore(prs(:,jPr),svPos,svClockBias,xHat,Wpr);
+    %--- Write your PVT inside this function
+    [xHat,zPr,H,dx] = pvtCore(prs(:,jPr),svPos,svClockBias,xHat,Wpr);
 
-  %--- Now calculate the a-posteriori range residual
-  zPr = zPr-H*dx;
+    %--- Now calculate the a-posteriori range residual
+    zPr = zPr-H*dx;
 end
 
 % Compute velocities ---------------------------------------------------------

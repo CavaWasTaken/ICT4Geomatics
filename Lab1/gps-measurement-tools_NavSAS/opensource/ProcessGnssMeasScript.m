@@ -28,8 +28,8 @@ addpath('library')
 % Replace these with your own data if needed
 % The log file obtained through new geolocalization systems contains
 % letters to be removed for this code
-prFileName    = 'gnss_log_2021_10_11_12_00_32.txt'; % Name of the GNSS log file
-dirName       = 'demoFiles/dataset_a';              % Directory containing the log file
+prFileName    = 'gnss_log_2025_03_29_13_28_44.txt'; % Name of the GNSS log file
+dirName       = 'demoFiles/myLogs';              % Directory containing the log file
 
 %% True position
 % Specify the true WGS84 latitude, longitude, and altitude (if known)

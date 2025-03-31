@@ -36,11 +36,17 @@ grid on, ylabel('(meters)'),
 %label Latitude, Longitude and Altitude
 iFi = isfinite(ned(:,1));%index into finite results
 h=zeros(1,3); %handles for Lat, Lon, Alt
-h(1)=text(tSeconds(end),ned(iFi(end),1),'Lat');
-set(h(1),'Color','r')
-h(2)=text(tSeconds(end),ned(iFi(end),2),'Lon');
+lat = ned(iFi,1);
+lon = ned(iFi,2);
+alt = ned(iFi,3);
+
+if ~isempty(lat)
+    h(1)=text(tSeconds(end),lat(end),'Lat');
+    set(h(1),'Color','r')
+end
+h(2)=text(tSeconds(end),lon(end),'Lon');
 set(h(2),'Color','g')
-h(3)=text(tSeconds(end),ned(iFi(end),3),'Alt');
+h(3)=text(tSeconds(end),alt(end),'Alt');
 set(h(3),'Color','b')
 %shift the highest a little higher, so it doesnt overwrite the others
 [~,iMax] = max(ned(iFi(end),:));
@@ -89,8 +95,10 @@ title('Velocity states [North,East,Down]');
 grid on, ylabel('(m/s)'),
 
 %label North, East, Down
-iFi = isfinite(vel(:,1));%index into finite results
-h=zeros(1,3); %handles for Lat, Lon, Alt
+if ~isempty(iFi) && ~isempty(vel)
+    h(1)=text(tSeconds(end),vel(iFi(end),1),'North');
+    set(h(1),'Color','r')
+end
 h(1)=text(tSeconds(end),vel(iFi(end),1),'North');
 set(h(1),'Color','r')
 h(2)=text(tSeconds(end),vel(iFi(end),2),'East');

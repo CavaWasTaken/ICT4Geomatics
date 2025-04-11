@@ -1,0 +1,38 @@
+% Author - Jon Arnt Kårstad, NTNU IMT
+% Edited by NavSAS Group, Politecnico di Torino
+\documentclass[12pt]{article}
+
+% Importing document settings from our file "packages.sty"
+\usepackage{packages}
+
+% Beginning of document
+\begin{document}
+
+% Inserting title page
+\import{./}{title_page}
+
+% Defining front matter settings
+\frontmatter
+
+% Inserting table of contents
+\tableofcontents
+
+% Defining main matter settings
+\mainmatter
+
+% --- MAIN CONTENT
+% Lab01: GNSS in Mobile Devices
+\import{./Labs/}{Lab01}
+
+% Lab02: PVT Estimation
+\import{./Labs/}{Lab02}
+
+% Add other labs 
+\import{./Labs/}{Lab03}
+
+% Printing bibliography
+\newpage
+\printbibliography[heading = bibintoc, title = Bibliography]
+
+% End of document
+\end{document}

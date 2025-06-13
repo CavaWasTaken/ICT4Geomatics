@@ -39,6 +39,10 @@ function PlotSatelliteCounter(gnssMeas,prFileName)
     xlabel(xs, 'Interpreter', 'none');
     grid on;
 
+    % Adjust y-axis to add some space above the maximum value
+    yMax = max(max(visibleSatelliteCounts));
+    ylim([0, yMax + 2]); % Add 2 units above the max value for better visualization
+
     % highlight epochs with not enough satellites
     hold on; % keep the existing plot
     scatter(timeSeconds(notEnoughSatellites == 1), visibleSatelliteCounts(notEnoughSatellites == 1), ...

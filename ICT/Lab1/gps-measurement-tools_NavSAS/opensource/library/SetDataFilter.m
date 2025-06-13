@@ -90,7 +90,7 @@ dataFilter{end,2}   = 'bitand(State,2^0) & bitand(State,2^3)';
 
 % Set a threshold for C/N0 parameter (e.g., greater than 30 dB-Hz)
 dataFilter{end+1,1} = 'Cn0DbHz'; 
-dataFilter{end,2}   = 'Cn0DbHz > 0';
+dataFilter{end,2}   = 'Cn0DbHz > 30';
 
 end %end of function SetDataFilter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

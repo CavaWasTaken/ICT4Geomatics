@@ -226,7 +226,6 @@ end %of function GetDelPr
 function [prSeconds,tRxSeconds]  = CheckGpsWeekRollover(tRxSeconds,tTxSeconds)
 %utility function for ProcessGnssMeas
 
-% TO CHECK: if a week rollover occures the Rx time should be lower then the transmission time, so the value is negative. Then the condition is false and the program fails to detect the week rollover
 prSeconds  = tRxSeconds - tTxSeconds;
 
 % it checks if the pseudorange exceeds the half the length of a GPS week

@@ -35,10 +35,20 @@ H = [v, ones(numsat,1)];              % H matrix = [unit vector,1]
 prHat = range + xHat(4) - GpsConstants.LIGHTSPEED*svClockBias;         % Nominal pseudorange = range + receiver clock bias
 
 %--- Calculate range residual dRho
-dRho = pseudoranges - prHat;      % Residual = nominal pseudorange - corrected pseudorange
+dRho = pseudoranges - prHat;      % Residual = measured pseudorange - estimated pseudorange
 
 %--- Calculate pvt update dx
+% dx is the correction to the current estimate (xHat) of receiver position and clock bias.
+% It is computed by solving the linearized system using Weighted Least Squares:
+%   dx = (H'*W*H)^-1 * H'*W*dRho
+% In this code, the equivalent operation is performed as:
 dx = pinv(Wpr*H)*Wpr*dRho; % dx = (H'*W*H)^-1*H'*W*dRho
+% where:
+%   H   = geometry matrix (direction cosines and clock bias column)
+%   Wpr = weighting matrix (usually diagonal, based on measurement variances)
+%   dRho = vector of pseudorange residuals (measured - estimated)
+% pinv is used for numerical stability (pseudo-inverse).
+% The result dx is a 4x1 vector: [delta_x; delta_y; delta_z; delta_clock_bias]
 
 %--- Update linearization point xHat
 xHat = xHat + dx; % xHat = xHat + dx

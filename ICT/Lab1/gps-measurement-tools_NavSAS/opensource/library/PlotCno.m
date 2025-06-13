@@ -36,20 +36,19 @@ for i=1:M
     if ~isempty(iF)
         % get the time of the last finite value
         ti = timeSeconds(iF(end));
-        % plot the C/No for the i-th satellite over the time in seconds
-        h = plot(timeSeconds,Cn0iDbHz);
+        % create label for legend
+        ts = int2str(gnssMeas.Svid(i));
+        if isfinite(gnssMeas.AzDeg(i))
+            ts = sprintf('%s, %03.0f^o, %02.0f^o',ts, ...
+                gnssMeas.AzDeg(i),gnssMeas.ElDeg(i));
+        end
+        % plot with DisplayName for clickable legend
+        h = plot(timeSeconds,Cn0iDbHz,'DisplayName',ts);
         hold on
         if bGotColors
             set(h,'Color',colors(i,:));
         else
             colors(i,:) = get(h,'Color');
-        end
-        ts = int2str(gnssMeas.Svid(i));
-        % the azimuth is the horizontal angle of the satellite relative to the receiver
-        % the elevation is the vertical angle of the satellite relative to the receiver
-        if isfinite(gnssMeas.AzDeg(i))  % if the azimuth is available
-            ts = sprintf('%s, %03.0f^o, %02.0f^o',ts,...
-                gnssMeas.AzDeg(i),gnssMeas.ElDeg(i));   % add the azimuth and elevation to the label
         end
         % add the satellite ID to the last value
         text(ti,Cn0iDbHz(iF(end)),ts,'Color',colors(i,:));
@@ -59,11 +58,28 @@ title('C/No in dB.Hz'),ylabel('(dB.Hz)')
 xs = sprintf('time (seconds)\n%s',prFileName);
 xlabel(xs,'Interpreter','none')
 grid on
+legend('show') % show clickable legend
+legend('Location','best')
+legend('boxon')
+set(legend,'Interpreter','none')
+% Enable interactive selection of which satellite to display
+% (MATLAB R2018b or newer: legend is interactive by default)
+% For older versions, use the following to allow toggling visibility:
+hL = legend('show');
+set(hL,'ItemHitFcn',@(src, event) set(event.Peer,'Visible', ...
+    switchVisibility(event.Peer.Visible)));
 
 if nargout
     colorsOut = colors;
 end
 
+function vis = switchVisibility(current)
+    if strcmp(current,'on')
+        vis = 'off';
+    else
+        vis = 'on';
+    end
+end
 end %end of function PlotCno
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
